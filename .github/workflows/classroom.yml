@@ -1,0 +1,44 @@
+name: Autograding Tests
+'on':
+  - push
+  - repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: RunningWordleAllTests
+        id: runningwordlealltests
+        run: |
+          chmod +x run_all_tests.sh
+          # Capture the percentage of passing tests
+          SCORE=$(./run_all_tests.sh | grep -oP '(?<=Percentage of tests passed: )[0-9]+')
+          
+          # Clean and compact the JSON output using jq
+          JSON_OUTPUT=$(echo "{\"version\": 1, \"status\": \"pass\", \"max_score\": $SCORE, \"tests\": [{\"name\": \"RunningWordleAllTests\", \"status\": \"pass\", \"score\": $SCORE, \"test_code\": \"./run_all_tests.sh\", \"filename\": \"\", \"line_no\": 0, \"duration\": 1111}]}" | jq -c .)
+          
+          
+          # Encode the cleaned JSON in base64
+          BASE64_JSON=$(echo "$JSON_OUTPUT" | base64 -w 0)
+          
+          
+          # Debug prints
+          echo "JSON_OUTPUT: $JSON_OUTPUT"
+          echo "BASE64_JSON: $BASE64_JSON"
+          echo "Score: $SCORE"  # Debugging output
+          
+          # Pass the base64-encoded JSON to set-output
+          echo "RUNNINGWORDLEALLTESTS_RESULTS=$BASE64_JSON" >> $GITHUB_ENV
+      - name: Autograding Reporter
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          RUNNINGWORDLEALLTESTS_RESULTS: "${{ env.RUNNINGWORDLEALLTESTS_RESULTS }}"
+        with:
+          runners: runningwordlealltests

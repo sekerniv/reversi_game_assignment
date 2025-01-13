@@ -1,0 +1,63 @@
+# Ignore project-specific files for IntelliJ IDEA
+.idea/
+*.iml
+
+# Ignore project-specific files for Eclipse
+.project
+.classpath
+.settings/
+
+# Ignore project-specific files for NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# Ignore build directories
+/bin/
+/build/
+/out/
+/target/
+
+# Ignore Maven and Gradle wrapper files
+.mvn/
+/.gradle/
+!gradle-wrapper.jar
+
+# Ignore compiled Java class files
+*.class
+
+# Ignore log files
+*.log
+
+# Ignore virtual machine crash logs
+hs_err_pid*
+replay_pid*
+
+# Ignore packaged Java artifacts
+*.jar
+*.war
+*.nar
+*.ear
+
+# Ignore temporary or cache files
+*.tmp
+*.swp
+*.swo
+*~ 
+
+# Ignore system files
+.DS_Store  # macOS system file
+Thumbs.db  # Windows system file
+
+# Ignore user-specific files
+*.bak
+*.orig
+
+# Ignore any coverage or test reports
+/coverage/
+/test-output/
+/jacoco.exec
+*.ec
+*.em
