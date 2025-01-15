@@ -4,9 +4,9 @@ import java.util.Random;
 
 /**
 * This is a template for a bot.
-* Give your bot a uniqie name and rename this class and the file name.
+* Give your bot a unique name and rename this class and the file accordingly.
 * 
-* PLEASE NAME YOUR BOT WITH A NAME THAT ENDS WITH "Bot" (e.g. FlipMasterBot or ReversiConquerorBot).
+* PLEASE name your bot with a name that ends with "Bot" (e.g., FlipMasterBot or ReversiConquerorBot).
 */
 public class RenameThisClassMyReversiBot implements ReversiBot {
 
@@ -20,7 +20,6 @@ public class RenameThisClassMyReversiBot implements ReversiBot {
 		return getRandomMove();
 	}
 
-	
 
 	public MoveScore getRandomMove(){
 		MoveScore[] possibleMoves = this.game.getPossibleMoves();
