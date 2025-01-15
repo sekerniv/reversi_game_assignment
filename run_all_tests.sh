@@ -2,7 +2,7 @@
 # Project version 1.1
 
 # Compile all Java files
-javac -cp test-lib/junit-platform-console-standalone-1.11.0.jar -d out $(find src test -name "*.java")
+javac -cp "test-lib/*" -d out $(find src test -name "*.java")
 
 # Check if compilation was successful
 if [ $? -ne 0 ]; then
@@ -11,7 +11,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Run all tests in the compiled classpath
-RESULT=$(java -jar test-lib/junit-platform-console-standalone-1.11.0.jar -cp out --scan-class-path)
+RESULT=$(java -cp "test-lib/*:out" org.junit.platform.console.ConsoleLauncher --scan-class-path)
 
 # Parse the test result to count total and successful tests
 TOTAL_TESTS=$(echo "$RESULT" | grep -o '[0-9]\+ tests found' | grep -o '[0-9]\+')
