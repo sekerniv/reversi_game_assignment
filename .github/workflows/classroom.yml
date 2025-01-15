@@ -14,15 +14,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: RunningWordleAllTests
-        id: runningwordlealltests
+      - name: RunningAllTests
+        id: runningalltests
         run: |
           chmod +x run_all_tests.sh
           # Capture the percentage of passing tests
           SCORE=$(./run_all_tests.sh | grep -oP '(?<=Percentage of tests passed: )[0-9]+')
           
           # Clean and compact the JSON output using jq
-          JSON_OUTPUT=$(echo "{\"version\": 1, \"status\": \"pass\", \"max_score\": $SCORE, \"tests\": [{\"name\": \"RunningWordleAllTests\", \"status\": \"pass\", \"score\": $SCORE, \"test_code\": \"./run_all_tests.sh\", \"filename\": \"\", \"line_no\": 0, \"duration\": 1111}]}" | jq -c .)
+          JSON_OUTPUT=$(echo "{\"version\": 1, \"status\": \"pass\", \"max_score\": $SCORE, \"tests\": [{\"name\": \"RunningAllTests\", \"status\": \"pass\", \"score\": $SCORE, \"test_code\": \"./run_all_tests.sh\", \"filename\": \"\", \"line_no\": 0, \"duration\": 1111}]}" | jq -c .)
           
           
           # Encode the cleaned JSON in base64
@@ -35,10 +35,10 @@ jobs:
           echo "Score: $SCORE"  # Debugging output
           
           # Pass the base64-encoded JSON to set-output
-          echo "RUNNINGWORDLEALLTESTS_RESULTS=$BASE64_JSON" >> $GITHUB_ENV
+          echo "RUNNINGALLTESTS_RESULTS=$BASE64_JSON" >> $GITHUB_ENV
       - name: Autograding Reporter
         uses: classroom-resources/autograding-grading-reporter@v1
         env:
-          RUNNINGWORDLEALLTESTS_RESULTS: "${{ env.RUNNINGWORDLEALLTESTS_RESULTS }}"
+          RUNNINGALLTESTS_RESULTS: "${{ env.RUNNINGALLTESTS_RESULTS }}"
         with:
-          runners: runningwordlealltests
+          runners: runningalltests
