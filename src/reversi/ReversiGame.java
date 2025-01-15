@@ -24,8 +24,28 @@ public class ReversiGame {
 	 * @return the initialized board
 	 */
 	public ReversiGame() {
-		this.curPlayer = PLAYER_ONE;
+		curPlayer = PLAYER_ONE;
+		int size = 8;
+		int[][] board = new int[size][size];
+		board[size / 2 - 1][size / 2 - 1] = 1;
+		board[size / 2][size / 2] = 1;
+		board[size / 2][size / 2 - 1] = 2;
+		board[size / 2 - 1][size / 2] = 2;
+		this.board = board;
+	}
 
+	/**
+	* Initializes the board by copying the fields from the given game
+	 * @param game
+	 */
+	public ReversiGame(ReversiGame game) {
+		this.curPlayer = game.curPlayer;
+		this.board = new int[game.board.length][game.board[0].length];
+		for (int i = 0; i < game.board.length; i++) {
+			for (int j = 0; j < game.board.length; j++) {
+				this.board[i][j] = game.board[i][j];
+			}
+		}
 	}
 
 	public int[][] getBoard() {
@@ -37,7 +57,7 @@ public class ReversiGame {
 	 * @return
 	 */
 	public int getCurPlayer() {
-		return PLAYER_ONE;
+		return this.curPlayer;
 	}
 
 	/**
@@ -59,7 +79,22 @@ public class ReversiGame {
 	 */
 
 	public void printBoard() {
+		System.out.print("  ");
+		for (int i = 0; i < board.length; i++) {
+			System.out.print(i + " ");
+		}
+		System.out.println();
 
+		for (int i = 0; i < board.length; i++) {
+			for (int j = 0; j < board[i].length + 1; j++) {
+				if (j == 0) {
+					System.out.print(i + " ");
+				} else {
+					System.out.print(board[i][j - 1] + " ");
+				}
+			}
+			System.out.println();
+		}
 	}
 
 	/**
@@ -69,7 +104,7 @@ public class ReversiGame {
 	 * @return true if the given row and column are on the board, false otherwise
 	 */
 	public boolean isOnBoard(int row, int col) {
-		return false;
+		return ((row < this.board.length) && (col < this.board[0].length) && (row >= 0) && (col >= 0));
 	}
 
 	/**
@@ -79,7 +114,7 @@ public class ReversiGame {
 	 * @return
 	 */
 	public static int opponentPlayer(int player) {
-		return PLAYER_ONE;
+		return player == PLAYER_ONE ? PLAYER_TWO : PLAYER_ONE;
 	}
 
 // ================================================================================  PART A2  =============================================================================== ======================================== ========================================
@@ -94,6 +129,24 @@ public class ReversiGame {
 	 * @return the number of opponent's disks that will be flipped in the given direction
 	 */
 	public int calcFlipsInDirection(int player, int row, int col, int rowInc, int columnInc) {
+		if (!isOnBoard(row, col)) {
+			throw new RuntimeException("Position is off board");
+		}
+
+		int numOfFlips = 0;
+		int curRow = row + rowInc;
+		int curColumn = col + columnInc;
+
+		while (isOnBoard(curRow, curColumn) && this.board[curRow][curColumn] == opponentPlayer(player)) {
+			numOfFlips++;
+			curRow += rowInc;
+			curColumn += columnInc;
+		}
+
+		if (isOnBoard(curRow, curColumn) && this.board[curRow][curColumn] == player) {
+			return numOfFlips;
+		}
+
 		return 0;
 	}
 
@@ -106,7 +159,21 @@ public class ReversiGame {
 	 * @return the number of disks that were flipped in the given direction
 	 */
 	public int updateMoveDisksInSingleDirection(int row, int col, int rowInc, int colInc) {
-		return 0;
+		int numOfFlips = calcFlipsInDirection(this.curPlayer, row, col, rowInc, colInc);
+		if (numOfFlips == 0) {
+			return 0;
+		}
+
+		int curRow = row + rowInc;
+		int curCol = col + colInc;
+
+		for(int i = 0; i < numOfFlips; i++) {
+			this.board[curRow][curCol] = this.curPlayer;
+			curRow += rowInc;
+			curCol += colInc;
+		}
+
+		return numOfFlips;
 	}
 
 
@@ -120,8 +187,29 @@ public class ReversiGame {
 		// Keep this print. It will help you debug your code
 		System.out.println("Place disk: " + this.curPlayer + " at row: " + row + " column: " + col);
 
-		return false;
+		if (this.board[row][col] != 0) {
+			return false;
+		}
+		boolean success = false;
+
+		for (int rowInc = -1; rowInc <= 1; rowInc++) {
+			for (int colInc = -1; colInc <= 1; colInc++) {
+				if (updateMoveDisksInSingleDirection(row, col, rowInc, colInc) > 0) {
+					this.board[row][col] = this.curPlayer;
+					success = true;
+				}
+			}
+		}
+		if (success) {
+			this.curPlayer = this.switchToNextPlayablePlayer();
+		}
+
+		return success;
+
+
 	}
+
+
 
 //  ================================================================================  END OF PART A  =============================================================================== ======================================== ========================================
 
@@ -135,7 +223,17 @@ public class ReversiGame {
 	 * @return the number of flips as a result of the move
 	 */
 	private int calcMoveFlips(int player, int row, int col) {
-		return 0;
+		int flips = 0;
+		if (this.board[row][col] != 0) {
+			return 0;
+		}
+
+		for (int rowInc = -1; rowInc <= 1; rowInc++) {
+			for (int colInc = -1; colInc <= 1; colInc++) {
+				flips += calcFlipsInDirection(player, row, col, rowInc, colInc);
+			}
+		}
+		return flips;
 	}
 
 	/**
@@ -146,7 +244,18 @@ public class ReversiGame {
 	 *         empty array. For each MoveScore the score will the number of flips
 	 */
 	public MoveScore[] getPossibleMoves(int player) {
-		return null;
+		MoveScore[] possibleMoves = new MoveScore[this.board.length * this.board[0].length];
+		int index = 0;
+		for (int row = 0; row < this.board.length; row++) {
+			for (int col = 0; col < this.board[row].length; col++) {
+				int flips = calcMoveFlips(player, row, col);
+				if (flips > 0) {
+					possibleMoves[index] = new MoveScore(row, col, flips);
+					index++;
+				}
+			}
+		}
+		return Arrays.copyOf(possibleMoves, index);
 	}
 
 	/**
@@ -164,7 +273,7 @@ public class ReversiGame {
 	 * @return true if the game is over, false otherwise
 	 */
 	public boolean isGameOver() {
-		return false;
+		return this.getPossibleMoves(PLAYER_ONE).length == 0 && this.getPossibleMoves(PLAYER_TWO).length == 0;
 	}
 
 	/**
@@ -173,7 +282,13 @@ public class ReversiGame {
 	 * @return the current player after the switch
 	 */
 	public int switchToNextPlayablePlayer() {
-		return PLAYER_ONE;
+		this.curPlayer = opponentPlayer(this.curPlayer);
+		if (this.getPossibleMoves().length == 0) {
+			// System.out.println("There are no possible moves for player " + this.curPlayer + " skipping turn");
+			this.curPlayer = opponentPlayer(this.curPlayer);
+		}
+
+		return this.curPlayer;
 	}
 
 
@@ -183,6 +298,28 @@ public class ReversiGame {
 	 * @return -1 if the game is not over, 0 for tie, 1 if player 1 wins, 2 if player 2 wins
 	 */
 	public int getWinner() {
-		return PLAYER_ONE;
+		if (!isGameOver()) {
+			return -1;
+		}
+		int playerOneCount = 0;
+		int playerTwoCount = 0;
+		for (int i = 0; i < this.board.length; i++) {
+			for (int j = 0; j < this.board[i].length; j++) {
+				if (this.board[i][j] == PLAYER_ONE) {
+					playerOneCount++;
+				}
+				if (this.board[i][j] == PLAYER_TWO) {
+					playerTwoCount++;
+				}
+			}
+		}
+
+		if (playerOneCount > playerTwoCount) {
+			return PLAYER_ONE;
+		} else if (playerTwoCount > playerOneCount) {
+			return PLAYER_TWO;
+		} else {
+			return 0;
+		}
 	}
 }
